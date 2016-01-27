@@ -27,7 +27,6 @@ module.exports = (function router () {
       var route = path.routes[j]
       controllers[route] = require('../controllers/' + path.template)
       views[route] = require('../../partials/' + path.template + '.html')
-      fsm.addState(controllers[route])
     }
   }
 
