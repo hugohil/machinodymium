@@ -2,10 +2,11 @@ module.exports = (function home () {
   'use strict'
 
   let ctrl = {}
+  const signals = require('signals')
   let machina = require('machina')
   let fsm = {}
 
-  ctrl.init = function init () {
+  ctrl.init = function init (state, id) {
     console.log('home.js - init home controller.')
 
     fsm = new machina.Fsm({
@@ -13,10 +14,10 @@ module.exports = (function home () {
         console.log('home.js - initializing FSM.')
       },
       namespace: 'home-signal',
-      initialState: 'unintialized',
+      initialState: 'start',
       states: {
-        unintialized: {
-          next: 'green'
+        start: {
+          next: (state === 'start') ? 'green' : state
         },
         green: {
           _onEnter: function () {
@@ -57,15 +58,26 @@ module.exports = (function home () {
       }
     })
 
+    let buttons = document.querySelectorAll('.state-changer')
+    for (var i = 0; i < buttons.length; i++) {
+      let button = buttons[i]
+      button.addEventListener('click', (event) => {
+        fsm.next()
+      })
+    }
+
     fsm.on('*', function (eventName, data) {
-      console.log('home.js - %s happened', eventName)
       if (data.action) {
         console.log('home.js - %s from %s to %s.', data.action, data.fromState, data.toState)
+        ctrl.changedState.dispatch(data.toState)
       }
     })
 
     fsm.next()
   }
+
+  ctrl.changedState = new signals.Signal()
+  ctrl.changedContent = new signals.Signal()
 
   ctrl.destroy = function destroy () {
     ctrl = {}
