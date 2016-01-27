@@ -7,8 +7,14 @@ module.exports = (function router () {
   let self = {}
 
   const paths = [
-    'home',
-    'page'
+    {
+      routes: ['home'],
+      template: 'home'
+    },
+    {
+      routes: ['page-1', 'page-2'],
+      template: 'page'
+    }
   ]
 
   let controllers = {}
@@ -17,8 +23,12 @@ module.exports = (function router () {
 
   for (let i = 0; i < paths.length; i++) {
     let path = paths[i]
-    controllers[path] = require('../controllers/' + path)
-    views[path] = require('../../partials/' + path + '.html')
+    for (var j = 0; j < path.routes.length; j++) {
+      var route = path.routes[j]
+      controllers[route] = require('../controllers/' + path.template)
+      views[route] = require('../../partials/' + path.template + '.html')
+      fsm.addState(controllers[route])
+    }
   }
 
   self.init = function init () {
